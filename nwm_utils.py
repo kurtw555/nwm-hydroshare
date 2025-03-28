@@ -1,7 +1,9 @@
 import xarray as xr
 import fsspec
+from fsspec import FSMap
 import pyproj
 import geopandas as gpd
+import zarr
 
 def get_conus_bucket_url(variable_code):
     """
@@ -13,7 +15,8 @@ def get_conus_bucket_url(variable_code):
     Returns:
     str: S3 bucket url path for retrospective  data.
     """
-    conus_bucket_url = f's3://noaa-nwm-retrospective-3-0-pds/CONUS/zarr/{variable_code}.zarr'
+    #conus_bucket_url = f's3://noaa-nwm-retrospective-3-0-pds/CONUS/zarr/{variable_code}.zarr'
+    conus_bucket_url = f'noaa-nwm-retrospective-3-0-pds/CONUS/zarr/{variable_code}.zarr'
     return conus_bucket_url
 
 def load_dataset(conus_bucket_url):
@@ -26,14 +29,18 @@ def load_dataset(conus_bucket_url):
     Returns:
     xr.Dataset: The loaded dataset as a xarray dataset
     """
-    ds = xr.open_zarr(
-        fsspec.get_mapper(
-            conus_bucket_url,
-            anon=True
-        ),
-        consolidated=True
-    )
+    fs = fsspec.filesystem('s3', anon=True, asynchronous=True)  # Use anonymous access to S3
+    store = zarr.storage.FsspecStore(fs, path=conus_bucket_url)
+    ds = xr.open_zarr(store, consolidated=True)  # Load the dataset using xarray
     return ds
+    #ds = xr.open_zarr(
+    #    fsspec.get_mapper(
+    #        conus_bucket_url,
+    #        anon=True
+    #    ),
+    #    consolidated=True
+    #)
+    #return ds
 
 def reproject_coordinates(ds, lon, lat, input_crs='EPSG:4326'):
     """

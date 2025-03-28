@@ -10,8 +10,10 @@ from shapely.geometry import Polygon
 def get_data():
 
     # Start date in Year-Month-Day format, the earliest start date can be '1979-02-01'
+    
+    
     start_datetime = '1990-01-01'
-
+    end_datetimes = ['1999-12-31','2009-12-31','2019-12-31']
     # End date in Year-Month-Day format, the latest end date can be '2023-01-31'
     end_datetime = '2000-12-31'
 

@@ -2,7 +2,7 @@ import time
 import numpy as np
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import contextily as ctx  # For adding a basemap
+#import contextily as ctx  # For adding a basemap
 from shapely.geometry import box
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nwm_utils import get_conus_bucket_url, load_dataset, reproject_coordinates, get_fid, get_aggregation_code
@@ -10,8 +10,8 @@ from shapely.geometry import Polygon
 
 def get_data():    
     
-    with open("metrics.txt","a") as file:
-        file.write("start_date,end_date,#comids,duration")
+    with open("metrics.txt","w") as file:
+        file.write("start_date,end_date,#comids,duration\n")
 
     # Start date in Year-Month-Day format, the earliest start date can be '1979-02-01'
     start_datetime = '1990-01-01'    
@@ -51,32 +51,30 @@ def get_data():
 
     # Get the S3 bucket URL for the data path
     url = get_conus_bucket_url(variable_code)
-    ds = load_dataset(url)
-    #print(ds)
+    ds = load_dataset(url)    
+    print(ds)
     for end_date in end_datetimes:
         for num_comid in num_comids:            
             # Load the dataset
             start_time = time.perf_counter()
-            com_ids = comids3[:num_comid]
+            com_ids = comids3[0:num_comid]
             length = len(com_ids)
-
-            ds = load_dataset(url)
+            print(ds)            
             ds_subset = ds[variable_name].sel(feature_id=ds.feature_id.isin(com_ids)).loc[dict(time=slice(start_datetime,end_date))]
             #ds_subset_df = ds_subset.mean(['x', 'y']).to_dataframe()
             # Specify the file path where you want to save the CSV file
-            #file_path = f"{variable_name}_{start_datetime}_{end_datetime}.csv"
+            file_path = f"{variable_name}_{num_comid}_{start_datetime}_{end_date}.csv"
 
             # Save the DataFrame to a CSV file
-            ds = ds_subset.to_dataframe()
-            #ds.to_csv(file_path, index=True)
+            df = ds_subset.to_dataframe()
+            df.to_csv(file_path, index=True)
 
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
-            #print(f"Elapsed time: {elapsed_time:.4f} seconds")
-            print(f"{start_datetime},{end_date},{length},{elapsed_time}")
+            print(f"Elapsed time: {elapsed_time:.4f} seconds")
 
-            with open("metrics.txt","a") as file:
-                file.write(f"{start_datetime},{end_date},{length},{elapsed_time}")
+            with open("metrics.txt","a") as file:                
+                file.write(f"{start_datetime},{end_date},{length},{elapsed_time}\n")
             
     return
     

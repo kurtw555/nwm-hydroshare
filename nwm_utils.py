@@ -101,7 +101,7 @@ def get_data(start_date:str, end_date:str, comids:list, file_name:str):
 
     # Get the S3 bucket URL for the data path
     url = get_conus_bucket_url(variable_code)
-    ds = load_dataset(url)        
+    ds = load_dataset(url)
     
     # Load the dataset    
     com_ids = comids
@@ -110,12 +110,12 @@ def get_data(start_date:str, end_date:str, comids:list, file_name:str):
     ds_subset = ds[variable_name].sel(feature_id=ds.feature_id.isin(com_ids)).loc[dict(time=slice(start_date,end_date))]
     #ds_subset_df = ds_subset.mean(['x', 'y']).to_dataframe()
     # Specify the file path where you want to save the CSV file
-    file_path = f"{file_name}_{start_date}_{end_date}.csv"
+    #file_path = f"{file_name}_{start_date}_{end_date}.csv"
 
     # Save the DataFrame to a CSV file
     logger.info(f"Saving data to dataframe")
     df = ds_subset.to_dataframe()
-    logger.info(f"Saving data to {file_path}")
-    df.to_csv(file_path, index=True)
+    logger.info(f"Saving data to {file_name}")
+    df.to_csv(file_name, index=True)
             
-    return file_path
+    return

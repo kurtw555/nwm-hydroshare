@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 import logging.handlers
 from logging.handlers import TimedRotatingFileHandler
@@ -73,8 +74,12 @@ if __name__ == "__main__":
     if len(comids) == 0:
         logger.error("No COMIDs provided in the input file.")
         sys.exit(1)
-    file_prefix = param_data['file_prefix']
+    file_name = param_data['file_name']
+    _, file_extension = os.path.splitext(file_name)
+    if file_extension != ".csv":
+        file_name = file_name + ".csv"
+        
 
-    file_path = get_data(start_date, end_date, comids, file_prefix)
+    get_data(start_date, end_date, comids, file_name)
 
-    logger.info(f"Successfully wrote results to: {file_path}")
+    logger.info(f"Successfully wrote results to: {file_name}")

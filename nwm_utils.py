@@ -31,11 +31,16 @@ def load_dataset(conus_bucket_url):
     Returns:
     xr.Dataset: The loaded dataset as a xarray dataset
     """
-    logger.info(f"Loading dataset from {conus_bucket_url}")
-    fs = fsspec.filesystem('s3', anon=True, asynchronous=True)  # Use anonymous access to S3
-    store = zarr.storage.FsspecStore(fs, path=conus_bucket_url)
-    ds = xr.open_zarr(store, consolidated=True)  # Load the dataset using xarray
-    logger.info(f"Dataset loaded successfully from {conus_bucket_url}")
+    ds = None
+    try:
+        
+        logger.info(f"Loading dataset from {conus_bucket_url}")
+        fs = fsspec.filesystem('s3', anon=True, asynchronous=True)  # Use anonymous access to S3
+        store = zarr.storage.FsspecStore(fs, path=conus_bucket_url)
+        ds = xr.open_zarr(store, consolidated=True)  # Load the dataset using xarray
+        logger.info(f"Dataset loaded successfully from {conus_bucket_url}")
+    except:
+        logger.error(f"Failed to load dataset from {conus_bucket_url}. This may be due to an invalid path or network issue.", exc_info=True)
     return ds
     #ds = xr.open_zarr(
     #    fsspec.get_mapper(
@@ -70,7 +75,7 @@ def get_aggregation_code(aggr_name):
     
     return agg_options[aggr_name]
 
-def get_data(start_date:str, end_date:str, comids:list, file_name:str):
+def get_data(start_date:str, end_date:str, comids:list, file_name:str) -> bool:
     
     # Start date in Year-Month-Day format, the earliest start date can be '1979-02-01'    
     # User-defined NWM output dataset; see above for a list of valid dataset names.
@@ -102,6 +107,9 @@ def get_data(start_date:str, end_date:str, comids:list, file_name:str):
     # Get the S3 bucket URL for the data path
     url = get_conus_bucket_url(variable_code)
     ds = load_dataset(url)
+    if ds is None:
+        logger.error(f"Failed to load dataset from {url}. Cannot proceed with data extraction.")
+        return False
     
     # Load the dataset    
     com_ids = comids
@@ -118,4 +126,4 @@ def get_data(start_date:str, end_date:str, comids:list, file_name:str):
     logger.info(f"Saving data to {file_name}")
     df.to_csv(file_name, index=True)
             
-    return
+    return True

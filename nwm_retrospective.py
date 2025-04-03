@@ -80,6 +80,9 @@ if __name__ == "__main__":
         file_name = file_name + ".csv"
         
 
-    get_data(start_date, end_date, comids, file_name)
-
-    logger.info(f"Successfully wrote results to: {file_name}")
+    ret_val = get_data(start_date, end_date, comids, file_name)
+    if ret_val is True:
+        logger.info(f"Successfully wrote results to: {file_name}")
+    else:
+        logger.info(f"Failed to retrieve data and write to {file_name}.")
+        sys.exit(1)
